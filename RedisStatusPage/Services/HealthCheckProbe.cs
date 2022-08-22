@@ -60,13 +60,10 @@ namespace RedisStatusPage.Services
                     var curentStatus = result.Healthy ? IncidentStatus.Resolved : IncidentStatus.Reported;
                     if (incident != null && curentStatus == incident.LastStatus) return;
 
-                    // assert incident is not null (to suppress Roslyn warning)
-                    Debug.Assert(incident != null);
-                    
                     // save new incident
                     if (!result.Healthy)
                     {
-                        await _incidentService.Add(new Incident
+                        incident = new Incident
                         {
                             UnixTimestamp = DateTimeHelpers.ToUnixSeconds(now),
                             LastStatus = IncidentStatus.Reported,
@@ -80,10 +77,14 @@ namespace RedisStatusPage.Services
                                      Message = "Service is DOWN"
                                  }
                             }
-                        });
+                        };
+                        await _incidentService.Add(incident);
                     }
                     else
                     {
+                        // assert incident is not null (to suppress Roslyn warning)
+                        Debug.Assert(incident != null);
+
                         // update incident
                         incident.LastStatus = IncidentStatus.Resolved;
                         incident.History.Add(new IncidentResponse
@@ -95,6 +96,9 @@ namespace RedisStatusPage.Services
 
                         await _incidentService.Update(incident);
                     }
+
+                    // publish
+                    await _incidentService.Publish(incident);
                 });
             }
         }
