@@ -20,11 +20,15 @@ namespace RedisStatusPage.Core.Services
 
         public async Task SendMessage(PubSubMessage message)
         {
-            var body = new
+            var body = new 
             {
-                content = $"Service health alert! 🔥\n**{message.ServiceName}** health changed to **{message.Status}**."
+                content = $"Service health alert! 🔥\n**{message.ServiceName}** health changed to **{message.Status}**.",
+                embeds = Array.Empty<string>(),
+                attachments = Array.Empty<string>()
             };
-            var content = new StringContent(JsonSerializer.Serialize(body));
+            
+            var bodyString = JsonSerializer.Serialize(body);
+            var content = new StringContent(bodyString, System.Text.Encoding.UTF8, "application/json");
             var result = await _httpClient.PostAsync(_webhookUrl, content);
             result.EnsureSuccessStatusCode();
         }
