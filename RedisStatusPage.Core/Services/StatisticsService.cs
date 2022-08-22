@@ -74,19 +74,6 @@ namespace RedisStatusPage.Core.Services
 
             // set current status
             await db.HashSetAsync(ServiceLastStatusKey, serviceName, healthy);
-
-            // publish if state is changed
-            var lastStatus = (await db.HashGetAsync(ServiceLastStatusKey, serviceName)) == "1";
-            if (lastStatus == healthy) return;
-         
-            var message = JsonSerializer.Serialize(new PubSubMessage
-            {
-                Timestamp = timestamp,
-                ServiceName = serviceName,
-                Healthy = healthy
-            });
-            
-            await db.PublishAsync(PubSubMessage.ChannelName, message);
         }
 
         public Task<ChartData> GetChartData()

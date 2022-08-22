@@ -1,5 +1,6 @@
 ﻿using Redis.OM;
 using Redis.OM.Modeling;
+using StackExchange.Redis;
 
 namespace RedisStatusPage.Core.Services
 {
@@ -8,6 +9,7 @@ namespace RedisStatusPage.Core.Services
         Task CreateIndexIfNotExists();
         Task Add(Incident incident);
         Task Update(Incident incident);
+        Task Publish(Incident incident);
         Task<Incident> Get(string id);
         Task<IList<Incident>> GetActive();
         Task<IList<Incident>> GetAll();
@@ -22,11 +24,13 @@ namespace RedisStatusPage.Core.Services
 
     public class IncidentsService : IIncidentsService
     {
+        private readonly ConnectionMultiplexer _cn;
         private readonly RedisConnectionProvider _cnProvider;
 
-        public IncidentsService(RedisConnectionProvider cnProvider)
+        public IncidentsService(RedisConnectionProvider cnProvider, ConnectionMultiplexer cn)
         {
             _cnProvider = cnProvider;
+            _cn = cn;
         }
 
         public async Task CreateIndexIfNotExists()
@@ -45,6 +49,19 @@ namespace RedisStatusPage.Core.Services
         {
             var collection = _cnProvider.RedisCollection<Incident>();
             await collection.UpdateAsync(incident);
+        }
+
+        public async Task Publish(Incident incident)
+        {
+            var message = new PubSubMessage
+            {
+                Timestamp = DateTimeHelpers.FromUnixSeconds((long)incident.UnixTimestamp),
+                ServiceName = incident.ServiceName,
+                Status = incident.LastStatus
+            };
+
+            var subscriber = _cn.GetSubscriber();
+            await subscriber.PublishAsync(PubSubMessage.ChannelName, message.Serialize());
         }
 
         public async Task<Incident> Get(string id)
