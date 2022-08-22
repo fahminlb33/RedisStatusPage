@@ -8,8 +8,7 @@ namespace RedisStatusPage.Core.Services
 
         public DateTime Timestamp { get; set; }
         public string ServiceName { get; set; }
-        public bool Healthy { get; set; }
-        public string Status => Healthy ? "NORMAL" : "UNREACHABLE";
+        public string Status { get; set; }
 
         public string Serialize()
         {
