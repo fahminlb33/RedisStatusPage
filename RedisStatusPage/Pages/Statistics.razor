@@ -133,11 +133,6 @@
         };
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await chart.React();
-    }
-
     void GoToHome()
     {
         NavigationManager.NavigateTo("/");
