@@ -1,0 +1,37 @@
+version: "3.9"
+
+volumes:
+  redis:
+
+services:
+  redis:
+    image: redis/redis-stack
+    ports:
+      - 6379:6379
+      - 8001:8001
+    volumes:
+      - redis:/data
+    environment:
+    - REDIS_ARGS=--save 20 1
+
+  status_page:
+    build:
+      context: .
+      dockerfile: ./RedisStatusPage/Dockerfile
+    command: ["./wait-for-it.sh", "redis:6379", "--", "dotnet", "RedisStatusPage.dll"]
+    depends_on:
+      - redis
+    ports:
+      - 5000:80
+      - 5443:443
+
+  notification:
+    build:
+      context: .
+      dockerfile: ./RedisStatusPage.Notification/Dockerfile
+    command: ["./wait-for-it.sh", "redis:6379", "--", "dotnet", "RedisStatusPage.Notification.dll"]
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URI=redis:6379
+      - DISCORD_WEBHOOK_URI=https://discord.com/api/webhooks/1011145670817747007/Pv_6tuXuUAqmgd4hkumUJJSeazxf_VKRRLh590HJx4WqHOs5HU0Lke9UbdxGtwE2GfWz

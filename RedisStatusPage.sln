@@ -11,9 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedisStatusPage.Notificatio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{50C9618E-25D1-464B-AF08-0A7659877DE7}"
 	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
 		license = license
 		marketplace.json = marketplace.json
 		readme.md = readme.md
+		wait-for-it.sh = wait-for-it.sh
 	EndProjectSection
 EndProject
 Global
