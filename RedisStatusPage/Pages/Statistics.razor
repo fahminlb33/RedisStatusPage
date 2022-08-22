@@ -91,28 +91,19 @@
         {
             new()
             {
-                Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title
-                {
-                    Text = "Date"
-                },
+                Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title { Text = "Date" },
                 Type = Plotly.Blazor.LayoutLib.XAxisLib.TypeEnum.Date,
                 AutoRange = Plotly.Blazor.LayoutLib.XAxisLib.AutoRangeEnum.True,
                 Domain = new List<object> {0, 1},
                 Range = dateRange,
-                RangeSlider = new Plotly.Blazor.LayoutLib.XAxisLib.RangeSlider
-                {
-                    Range = dateRange,
-                },
+                RangeSlider = new Plotly.Blazor.LayoutLib.XAxisLib.RangeSlider { Range = dateRange },
             }
         };
         layout.YAxis = new List<YAxis>
         {
             new()
             {
-                Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title
-                {
-                    Text = "Latency"
-                },
+                Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title { Text = "Latency (ms)" },
             }
         };
     }
