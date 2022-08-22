@@ -33,6 +33,7 @@ Architecture diagram:
 sequenceDiagram
     RedisStatusPage->>+Redis: Save metrics
     RedisStatusPage->>+Redis: Save incidents
+    Redis-->>+RedisStatusPage: Metrics, incidents
     Redis->>+Notification: We have status update
     Notification->>+Discord: Send message
 ```
