@@ -1,0 +1,71 @@
+﻿@page "/incidents"
+@using RedisStatusPage.Core
+
+@inject NavigationManager NavigationManager
+@inject IIncidentsService IncidentService
+
+<PageTitle>ritsu-pi Incidents</PageTitle>
+
+<MudContainer Class="mt-5" MaxWidth="MaxWidth.Medium">
+    <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true">Past Incidents💥</MudText>
+
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12" Class="mt-6">
+            <MudGrid Justify="Justify.Center">
+                <MudItem xs="2">
+                    <MudCard Class="orange shades-text text-white">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h4">@incidentCount</MudText>
+                            <MudText Typo="Typo.body2">Incidents</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+        <MudItem xs="12" Class="mt-6">
+            <MudStack>
+                @foreach (var incident in incidents)
+                {
+                    <IncidentCard ServiceName="@incident.ServiceName" Timestamp="@incident.Timestamp" History="@incident.History" />
+                }
+            </MudStack>
+        </MudItem>
+        <MudItem xs="2" Class="mb-6">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Class="mt-8" StartIcon="@Icons.Material.Filled.Home" OnClick="GoToHome">Home</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    record IncidentData(DateTime Timestamp, string ServiceName, List<IncidentHistory> History);
+    List<IncidentData> incidents = new();
+    int incidentCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        incidentCount = await IncidentService.Count();
+
+        var serviceIncidents = await IncidentService.GetAll();
+        incidents = serviceIncidents
+            .Select(x => new IncidentData(
+                DateTimeHelpers.FromUnixSeconds((long)x.UnixTimestamp),
+                x.ServiceName,
+                x.History.Select(y => 
+                    new IncidentHistory
+                    {
+                        Timestamp = DateTimeHelpers.FromUnixSeconds((long)y.UnixTimestamp),
+                        Status = y.Status,
+                        Message = y.Message
+                    })
+                    .OrderByDirection(SortDirection.Descending, x => x.Timestamp)
+                    .ToList()
+                )
+            )
+            .ToList();
+    }
+
+    void GoToHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

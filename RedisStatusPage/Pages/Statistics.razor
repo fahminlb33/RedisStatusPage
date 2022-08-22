@@ -1,0 +1,145 @@
+﻿@page "/statistics"
+
+@inject NavigationManager NavigationManager
+@inject IStatisticsService StatService
+
+@using Humanizer
+@using Plotly.Blazor.LayoutLib
+@using Plotly.Blazor.Traces.ScatterLib
+
+<PageTitle>ritsu-pi Statistics</PageTitle>
+
+<MudContainer Class="mt-5" MaxWidth="MaxWidth.Medium">
+    <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true">Statistics📊</MudText>
+
+    <MudGrid Justify="Justify.Center">
+        <MudItem xs="12" Class="mt-6">
+            <MudGrid Justify="Justify.Center">
+                <MudItem xs="2">
+                    <MudCard Class="blue shades-text text-white">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h4">@stats.ServiceCount</MudText>
+                            <MudText Typo="Typo.body2">Services</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="2">
+                    <MudCard Class="green shades-text text-white">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h4">@stats.ReadyCount</MudText>
+                            <MudText Typo="Typo.body2">Ready</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="2">
+                    <MudCard Class="orange shades-text text-white">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h4">@stats.UnreachableCount</MudText>
+                            <MudText Typo="Typo.body2">Unreachable</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                <MudItem xs="4">
+                    <MudCard Class="blue-grey shades-text text-white">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h4">@stats.Uptime.Humanize()</MudText>
+                            <MudText Typo="Typo.body2">Uptime</MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+        <MudItem xs="12">
+            <PlotlyChart style="height: 500px; min-height: 350px" @bind-Config="config" @bind-Layout="layout" @bind-Data="data" @ref="chart" />
+        </MudItem>
+        <MudItem xs="2" Class="mb-6">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Class="mt-8" StartIcon="@Icons.Material.Filled.Home" OnClick="GoToHome">Home</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    PlotlyChart chart;
+    Config config;
+    Layout layout;
+    IList<ITrace> data = new List<ITrace>();
+    MonitoringStatistics stats = MonitoringStatistics.Empty;
+
+    protected override void OnInitialized()
+    {
+        // set config
+        config = new Config
+        {
+            Responsive = true
+        };
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // get stats
+        stats = await StatService.GetDashboard();
+
+        // get data from redis
+        var chartData = await StatService.GetChartData();
+
+        // set data
+        data = chartData.ServiceLatency
+            .Select(x => new Scatter
+            {
+                Name = x.Key,
+                Mode = ModeFlag.Lines | ModeFlag.Markers,
+                X = chartData.Timestamps.Cast<object>().ToList(),
+                Y = chartData.ServiceLatency[x.Key].Cast<object>().Select(x => (int) x < 0 ? null : x).ToList()
+            })
+            .Cast<ITrace>()
+            .ToList();
+
+        // set layout
+        var dateRange = new List<object> { chartData.Timestamps.First(), chartData.Timestamps.Last() };
+        layout = new Layout()
+        {
+            Title = new Title
+            {
+                Text = "Latency Graph"
+            },
+            XAxis = new List<XAxis>
+            {
+                new()
+                {
+                    Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title
+                    {
+                        Text = "Date"
+                    },
+                    Type = Plotly.Blazor.LayoutLib.XAxisLib.TypeEnum.Date,
+                    AutoRange = Plotly.Blazor.LayoutLib.XAxisLib.AutoRangeEnum.True,
+                    Domain = new List<object> {0, 1},
+                    Range = dateRange,
+                    RangeSlider = new Plotly.Blazor.LayoutLib.XAxisLib.RangeSlider
+                    {
+                        Range = dateRange,
+                    },
+                }
+            },
+            YAxis = new List<YAxis>
+            {
+                new()
+                {
+                    Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title
+                    {
+                        Text = "Latency"
+                    },
+                }
+            }
+        };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await chart.React();
+    }
+
+    void GoToHome()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

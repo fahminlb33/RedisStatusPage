@@ -1,0 +1,57 @@
+﻿@page "/"
+
+@implements IDisposable
+
+@inject NavigationManager NavigationManager
+@inject GlobalAppState GlobalState
+@inject IStatisticsService StatService
+
+<PageTitle>ritsu-pi Status</PageTitle>
+
+<MudContainer Class="mt-5" MaxWidth="MaxWidth.Medium">
+    <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true">ristu-pi Status😺</MudText>
+    <MudAlert Class="mt-6" Severity="Severity.Success" Variant="Variant.Filled" ContentAlignment="HorizontalAlignment.Center">All Systems Operational!</MudAlert>
+    <MudText Class="mt-12" Typo="Typo.h5" GutterBottom="true">Current status</MudText>
+    <MudPaper Class="d-flex flex-column" Style="height:100%;" Outlined="true">
+        <MudList>
+            @foreach (var service in services)
+            {
+                <ComponentItem Healthy="@service.Healthy" ServiceName="@service.ServiceName" />
+            }
+        </MudList>
+    </MudPaper>
+    <div>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Class="mt-8 mr-2" StartIcon="@Icons.Material.Filled.QueryStats" OnClick="GoToStatistics">Statistics</MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Class="mt-8 mr-2" StartIcon="@Icons.Material.Filled.History" OnClick="GoToIncidents">Past Incidents</MudButton>
+        <MudSwitch Class="mt-8 ml-2" ThumbIcon="@Icons.Material.Filled.DarkMode" Color="Color.Primary" Label="Dark Mode" @bind-Checked="@GlobalState.IsDarkMode" />
+    </div>
+</MudContainer>
+
+@code {
+    List<ServiceStatus> services = new();
+
+    void GoToStatistics()
+    {
+        NavigationManager.NavigateTo("/statistics");
+    }
+
+    void GoToIncidents()
+    {
+        NavigationManager.NavigateTo("/incidents");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        services = await StatService.GetLatestStatus();
+    }
+
+    protected override void OnInitialized()
+    {
+        GlobalState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        GlobalState.OnChange -= StateHasChanged;
+    }
+}

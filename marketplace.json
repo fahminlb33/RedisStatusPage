@@ -1,0 +1,22 @@
+{
+  "app_name": "Status Page",
+  "description": "Status page for microservice apps",
+  "hidden": false,
+  "rank": 21, 
+  "type": "Full App",
+  "contributed_by": "Community",
+  "repo_url": "",
+  "download_url": "",
+  "hosted_url": "",
+  "quick_deploy": "false",
+  "deploy_buttons": [],
+  "language": [ "C#" ],
+  "redis_commands": [ "SET" ], 
+  "redis_features": [ "json", "search", "pub/sub" ],
+  "redis_modules": [ "RediJSON", "RediSearch" ],
+  "app_image_urls": [],
+  "youtube_url": "",
+  "special_tags": [ "Hackathon" ],
+  "verticals": [ "Technology" ], 
+  "markdown": ""
+}

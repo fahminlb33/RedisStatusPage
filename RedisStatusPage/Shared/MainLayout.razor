@@ -1,0 +1,27 @@
+﻿@inherits LayoutComponentBase
+
+@implements IDisposable
+
+@inject GlobalAppState GlobalState
+
+<MudThemeProvider @bind-IsDarkMode="@GlobalState.IsDarkMode" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    protected override void OnInitialized()
+    {
+        GlobalState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        GlobalState.OnChange -= StateHasChanged;
+    }
+}

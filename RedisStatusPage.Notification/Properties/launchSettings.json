@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "RedisStatusPage.Notification": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "REDIS_URI": "localhost:6379"
+      }
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

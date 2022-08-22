@@ -1,0 +1,20 @@
+﻿<MudListItem>
+    <div class="d-flex">
+        <MudText><b>@ServiceName</b><br />@ServiceStatus</MudText>
+        <MudIcon Class="ml-auto" Color="@StatusColor" Icon="@StatusIcon" Size="Size.Large" />
+    </div>
+</MudListItem>
+
+@code {
+    [Parameter]
+    public string ServiceName { get; set; }
+
+    [Parameter]
+    public bool Healthy { get; set; }
+
+    public string ServiceStatus => Healthy ? "Normal" : "Unreachable";
+
+    public Color StatusColor => Healthy ? Color.Success : Color.Error;
+
+    public string StatusIcon => Healthy ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Warning;
+}

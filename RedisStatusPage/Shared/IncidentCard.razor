@@ -1,0 +1,23 @@
+﻿<MudCard>
+    <MudCardContent>
+        <MudText>@ServiceName</MudText>
+        <MudDivider Class="mb-2" />
+        <MudText Typo="Typo.body2">First reported: @Timestamp.ToString("F")</MudText>
+        @foreach (var item in History)
+        {
+            <MudText Typo="Typo.body1"><b>@item.Status</b> - @item.Message</MudText>
+            <MudText Typo="Typo.body2">@item.Timestamp.ToString("F")</MudText>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter]
+    public DateTime Timestamp { get; set; }
+
+    [Parameter]
+    public string ServiceName{ get; set; }
+
+    [Parameter]
+    public IEnumerable<IncidentHistory> History { get; set; }
+}
