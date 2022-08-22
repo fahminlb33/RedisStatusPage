@@ -8,6 +8,7 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["RedisStatusPage/RedisStatusPage.csproj", "RedisStatusPage/"]
+COPY ["RedisStatusPage.Core/RedisStatusPage.Core.csproj", "RedisStatusPage.Core/"]
 RUN dotnet restore "RedisStatusPage/RedisStatusPage.csproj"
 COPY . .
 WORKDIR "/src/RedisStatusPage"
@@ -18,5 +19,6 @@ RUN dotnet publish "RedisStatusPage.csproj" -c Release -o /app/publish /p:UseApp
 
 FROM base AS final
 WORKDIR /app
+COPY wait-for-it.sh .
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "RedisStatusPage.dll"]
