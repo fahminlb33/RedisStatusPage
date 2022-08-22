@@ -10,7 +10,7 @@
 
 <MudContainer Class="mt-5" MaxWidth="MaxWidth.Medium">
     <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true">ristu-pi Status😺</MudText>
-    <MudAlert Class="mt-6" Severity="Severity.Success" Variant="Variant.Filled" ContentAlignment="HorizontalAlignment.Center">All Systems Operational!</MudAlert>
+    <MudAlert Class="mt-6" Severity="@globalStatusIcon" Variant="Variant.Filled" ContentAlignment="HorizontalAlignment.Center">@globalStatus</MudAlert>
     <MudText Class="mt-12" Typo="Typo.h5" GutterBottom="true">Current status</MudText>
     <MudPaper Class="d-flex flex-column" Style="height:100%;" Outlined="true">
         <MudList>
@@ -29,6 +29,8 @@
 
 @code {
     List<ServiceStatus> services = new();
+    string globalStatus = "";
+    Severity globalStatusIcon = Severity.Success;
 
     void GoToStatistics()
     {
@@ -43,6 +45,21 @@
     protected override async Task OnInitializedAsync()
     {
         services = await StatService.GetLatestStatus();
+        if (services.All(x => !x.Healthy))
+        {
+            globalStatus = "Critical outage";
+            globalStatusIcon = Severity.Error;
+        }
+        else if (services.Any(x => !x.Healthy))
+        {
+            globalStatus = "System is partially down";
+            globalStatusIcon = Severity.Warning;
+        }
+        else
+        {
+            globalStatus = "System is operatiional";
+            globalStatusIcon = Severity.Success;
+        }
     }
 
     protected override void OnInitialized()
