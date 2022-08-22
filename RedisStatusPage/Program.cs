@@ -1,5 +1,4 @@
 using MudBlazor.Services;
-using Plotly.Blazor;
 using Redis.OM;
 using RedisStatusPage.Core;
 using RedisStatusPage.Core.Services;
@@ -59,36 +58,6 @@ var statsService = app.Services.GetRequiredService<IStatisticsService>();
 await statsService.CreateIndexIfNotExists();
 var incidentService = app.Services.GetRequiredService<IIncidentsService>();
 await incidentService.CreateIndexIfNotExists();
-
-// add dummy data
-//var now = DateTime.Now;
-//await statsService.Snapshot(now, "Prometheus", true, Random.Shared.Next(200));
-//await statsService.Snapshot(now, "Grafana", true, Random.Shared.Next(200));
-//await incidentService.Add(new Incident
-//{
-//    UnixTimestamp = DateTimeHelpers.ToUnixSeconds(now),
-//    History = new()
-//    {
-//        new()
-//        {
-//            UnixTimestamp = DateTimeHelpers.ToUnixSeconds(now),
-//            Status = "REPORTED",
-//            Message = "Prometheus is down!"
-//        }
-//    }
-//});
-
-//var incident = await incidentService.Get("01GB1FQGBTHA9E2V5HZH16RNHP");
-//if (incident != null)
-//{
-//    incident.History.Add(new IncidentResponse
-//    {
-//        UnixTimestamp = DateTimeHelpers.ToUnixSeconds(now),
-//        Status = "RESOLVED",
-//        Message = "All OK!"
-//    });
-//    await incidentService.Update(incident);
-//}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

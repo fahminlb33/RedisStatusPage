@@ -91,11 +91,12 @@ namespace RedisStatusPage.Core.Services
             var timestamps = query
                 .GroupBy(x => x.ServiceName)
                 .First()
+                .OrderBy(x => x.UnixTimestamp)
                 .Select(x => DateTimeHelpers.FromUnixSeconds((long)x.UnixTimestamp))
                 .ToList();
             var serviceLatency = query
                 .GroupBy(x => x.ServiceName)
-                .ToDictionary(x => x.Key, y => y.Select(p => p.Latency).ToList());
+                .ToDictionary(x => x.Key, y => y.OrderBy(i => i.UnixTimestamp).Select(p => p.Latency).ToList());
 
             // sanity check to fill missing data
             foreach (var service in serviceLatency.Keys)
