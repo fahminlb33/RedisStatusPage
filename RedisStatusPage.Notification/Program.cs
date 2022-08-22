@@ -51,28 +51,41 @@ subscriber.Subscribe(PubSubMessage.ChannelName, async (channel, message) =>
     }
 });
 
+// wait event to listen to termination signal
+var exitSignal = new ManualResetEvent(false);
+
 // hook to CTRL+C event
 Console.CancelKeyPress += Console_CancelKeyPress;
 void Console_CancelKeyPress(object? sender, ConsoleCancelEventArgs e)
 {
-    // dispose all
-    Console.WriteLine("Termination signal received, exiting...");
-    httpClient.Dispose();
-    subscriber.UnsubscribeAll();
-    connectionMultiplexer.Close();
+    // cancel SIGINT signal
+    e.Cancel = true;
 
-    // exit app
-    Environment.Exit(0);
+    // signal exit
+    if (!exitSignal.SafeWaitHandle.IsClosed) exitSignal?.Set();
+}
+
+// hook to SIGTERM signal
+AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+void CurrentDomain_ProcessExit(object? sender, EventArgs e)
+{
+    // signal exit
+    if (!exitSignal.SafeWaitHandle.IsClosed) exitSignal?.Set();
 }
 
 // wait for keypress and exit
 Console.WriteLine("Server started! Listening for messages...");
 Console.WriteLine();
-Console.WriteLine("Press any key to exit.");
-Console.Read();
+Console.WriteLine("Press CTRL+C to exit.");
+exitSignal.WaitOne();
 
 // dispose all
-Console.WriteLine("Unsubscribing...");
-httpClient.Dispose();
-subscriber.UnsubscribeAll();
-connectionMultiplexer.Close();
+Console.WriteLine("Exiting...");
+exitSignal?.Dispose();
+httpClient?.Dispose();
+subscriber?.UnsubscribeAll();
+connectionMultiplexer?.Close();
+
+Console.WriteLine("Exit gracefully.");
+
+Environment.Exit(0);

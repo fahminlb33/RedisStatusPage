@@ -3,7 +3,8 @@
     "RedisStatusPage.Notification": {
       "commandName": "Project",
       "environmentVariables": {
-        "REDIS_URI": "localhost:6379"
+        "REDIS_URI": "localhost:6379",
+        "DISCORD_WEBHOOK_URI": "https://discord.com/api/webhooks/xxx"
       }
     },
     "Docker": {
