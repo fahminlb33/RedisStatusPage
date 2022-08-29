@@ -20,30 +20,7 @@ builder.Services.AddMudServices();
 builder.Services.AddHttpClient();
 
 // Add services
-builder.Services.AddScoped<GlobalAppState>();
-
-builder.Services.AddSingleton<INetProbe, NetProbe>();
-builder.Services.AddSingleton<IIncidentsService, IncidentsService>();
-builder.Services.AddSingleton<IStatisticsService, StatisticsServiceV2>((IServiceProvider provider) =>
-{
-    var options = builder.Configuration.Get<MonitorOptions>();
-    var cnMultiplexer = provider.GetRequiredService<ConnectionMultiplexer>();
-    var cnProvider = provider.GetRequiredService<RedisConnectionProvider>();
-
-    //return new StatisticsService(cnMultiplexer, cnProvider)
-    //{
-    //    GraphLastSecond = options.GraphLastSeconds
-    //};
-    return new StatisticsServiceV2(cnMultiplexer)
-    {
-        GraphLastSecond = options.GraphLastSeconds
-    };
-});
-
-// add hosted service to check for service health periodically
-builder.Services.AddHostedService<HealthCheckProbe>();
-
-// add Redis services
+// add Redis
 builder.Services.AddSingleton((IServiceProvider provider) =>
 {
     var config = provider.GetRequiredService<IConfiguration>();
@@ -55,6 +32,38 @@ builder.Services.AddSingleton((IServiceProvider provider) =>
 {
     return new RedisConnectionProvider(provider.GetRequiredService<ConnectionMultiplexer>());
 });
+
+// add global app state
+builder.Services.AddScoped<GlobalAppState>();
+
+// add hosted service to check for service health periodically
+builder.Services.AddHostedService<HealthCheckProbe>();
+
+builder.Services.AddSingleton<INetProbe, NetProbe>();
+builder.Services.AddSingleton<IIncidentsService, IncidentsService>();
+
+// uncomment to enable V2
+builder.Services.AddSingleton<IStatisticsService>((IServiceProvider provider) =>
+{
+    var options = builder.Configuration.Get<MonitorOptions>();
+    var cnMultiplexer = provider.GetRequiredService<ConnectionMultiplexer>();
+    return new StatisticsServiceV2(cnMultiplexer)
+    {
+        GraphLastSecond = options.GraphLastSeconds
+    };
+});
+
+// uncomment to enable V1
+//builder.Services.AddSingleton<IStatisticsService>((IServiceProvider provider) =>
+//{
+//    var options = builder.Configuration.Get<MonitorOptions>();
+//    var cnMultiplexer = provider.GetRequiredService<ConnectionMultiplexer>();
+//    var cnProvider = provider.GetRequiredService<RedisConnectionProvider>();
+//    return new StatisticsService(cnMultiplexer, cnProvider)
+//    {
+//        GraphLastSecond = options.GraphLastSeconds
+//    };
+//});
 
 // Build server
 var app = builder.Build();
@@ -71,6 +80,7 @@ await app.Services
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
+    
     // The default HSTS value is 30 days.
     app.UseHsts();
 }
