@@ -57,7 +57,7 @@
                          SeriesType="ApexCharts.SeriesType.Line"
                          XValue="@(e => e.Timestamp)"
                          YValue="@(e => e.Latency)"
-                         OrderBy="e=>e.X" />
+                         OrderBy="@(e => e.X)" />
                }
             </ApexCharts.ApexChart>
         </MudItem>
@@ -122,31 +122,10 @@
             }
         };
 
-        // anotations
-        options.Annotations = new ApexCharts.Annotations 
-        {
-            Yaxis = new List<ApexCharts.AnnotationsYAxis>
-            {
-                new ApexCharts.AnnotationsYAxis
-                {
-                    Y = 50000,
-                    BorderWidth = 2,
-                    StrokeDashArray = 5,
-                    BorderColor = "red",
-                    Label = new ApexCharts.Label { Text = "Latency" }
-                }
-            }
-        };
-
         // tooltip
         options.Tooltip = new ApexCharts.Tooltip
         {
-            X = new ApexCharts.TooltipX { Format = @"hh:mm:ss" },
-            Y = new ApexCharts.TooltipY
-            {
-                Title = new ApexCharts.TooltipYTitle { Formatter = @"function(name) { return name + ':' }" },
-                Formatter = @"function(value, { series, seriesIndex, dataPointIndex, w }) { return '$' + value }"
-            },
+            X = new ApexCharts.TooltipX { Format = @"hh:mm:ss" }
         };
     }
 
