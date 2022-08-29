@@ -2,6 +2,8 @@
 
 Status page for your next microservice backend apps!
 
+[Read on DEV.to](https://dev.to/fahminlb33/status-page-with-redis-5gh7)
+
 This app started as an idea to integrate to my other project, [ritsu-pi](https://github.com/fahminlb33/ritsu-pi), it's a Raspberry Pi home server project where you can deploy all kind of apps to a single RPi (or even a cluster). Redis Hackathon comes in just the right moment to give me an extra motivation to finish this project :)
 
 This project is basically a Status Page (like Github Status, Azure Status, Atlassian Statuspage, or something similar) built on top of Blazor Server and Redis. Here you can define a "health check" and get reports when one of your service is down. Also it has a Discord webhook client that will send you a message when one of your service status has changed.
