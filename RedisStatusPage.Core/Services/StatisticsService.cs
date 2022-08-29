@@ -10,8 +10,8 @@ namespace RedisStatusPage.Core.Services
         private readonly ConnectionMultiplexer _cn;
         private readonly RedisConnectionProvider _cnProvider;
 
-        private const string FirstStartupKey = "STATISTICS:FIRST_STARTUP";
-        private const string ServiceLastStatusKey = "STATISTICS:LAST_STATUS";
+        private const string FirstStartupKey = "STATISTICS:FIRST_STARTUP";    // string
+        private const string ServiceLastStatusKey = "STATISTICS:LAST_STATUS"; // hash
 
         public int GraphLastSecond { get; set; } = 900;
 

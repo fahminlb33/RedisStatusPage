@@ -24,13 +24,17 @@ builder.Services.AddScoped<GlobalAppState>();
 
 builder.Services.AddSingleton<INetProbe, NetProbe>();
 builder.Services.AddSingleton<IIncidentsService, IncidentsService>();
-builder.Services.AddSingleton<IStatisticsService, StatisticsService>((IServiceProvider provider) =>
+builder.Services.AddSingleton<IStatisticsService, StatisticsServiceV2>((IServiceProvider provider) =>
 {
     var options = builder.Configuration.Get<MonitorOptions>();
     var cnMultiplexer = provider.GetRequiredService<ConnectionMultiplexer>();
     var cnProvider = provider.GetRequiredService<RedisConnectionProvider>();
 
-    return new StatisticsService(cnMultiplexer, cnProvider)
+    //return new StatisticsService(cnMultiplexer, cnProvider)
+    //{
+    //    GraphLastSecond = options.GraphLastSeconds
+    //};
+    return new StatisticsServiceV2(cnMultiplexer)
     {
         GraphLastSecond = options.GraphLastSeconds
     };
