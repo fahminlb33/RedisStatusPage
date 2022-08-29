@@ -1,8 +1,6 @@
 ﻿@page "/statistics"
 
 @using Humanizer
-@using Plotly.Blazor.LayoutLib
-@using Plotly.Blazor.Traces.ScatterLib
 
 @inject NavigationManager NavigationManager
 @inject IStatisticsService StatService
@@ -50,7 +48,18 @@
             </MudGrid>
         </MudItem>
         <MudItem xs="12">
-            <PlotlyChart style="height: 500px; min-height: 350px" @bind-Config="config" @bind-Layout="layout" @bind-Data="data" @ref="chart" />
+            <ApexCharts.ApexChart TItem="ChartPointData" Title="Latency Graph" XAxisType="ApexCharts.XAxisType.Datetime" Debug>
+                @foreach (var item in dataSource)
+                {
+                    <ApexCharts.ApexPointSeries TItem="ChartPointData"
+                         Items="@item.Value"
+                         Name="@item.Key"
+                         SeriesType="ApexCharts.SeriesType.Line"
+                         XValue="@(e => e.Timestamp)"
+                         YValue="@(e => e.Latency)"
+                         OrderBy="e=>e.X" />
+               }
+            </ApexCharts.ApexChart>
         </MudItem>
         <MudItem xs="2" Class="mb-6">
             <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Large" Class="mt-8" StartIcon="@Icons.Material.Filled.Home" OnClick="GoToHome">Home</MudButton>
@@ -59,11 +68,10 @@
 </MudContainer>
 
 @code {
-    PlotlyChart chart;
-    Config config = new Config { Responsive = true };
-    Layout layout = new Layout { Title = new Title { Text = "Latency Graph" }};
-    IList<ITrace> data = new List<ITrace>();
-    MonitoringStatistics stats = MonitoringStatistics.Empty;
+    private ApexCharts.ApexChartOptions<ChartPointData> options = new ApexCharts.ApexChartOptions<ChartPointData>();
+
+    private MonitoringStatistics stats = MonitoringStatistics.Empty;
+    private Dictionary<string, List<ChartPointData>> dataSource = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,37 +82,71 @@
         var chartData = await StatService.GetChartData();
 
         // set data
-        data = chartData.ServiceLatency
-            .Select(x => new Scatter
-            {
-                Name = x.Key,
-                Mode = ModeFlag.Lines | ModeFlag.Markers,
-                X = chartData.Timestamps.Cast<object>().ToList(),
-                Y = chartData.ServiceLatency[x.Key].Cast<object>().Select(x => (int) x < 0 ? null : x).ToList()
-            })
-            .Cast<ITrace>()
-            .ToList();
+        dataSource = new Dictionary<string, List<ChartPointData>>();
+        foreach (var item in chartData.ServiceLatency)
+        {
+            var zipped = chartData.Timestamps.Zip(item.Value).Select(x => new ChartPointData { Latency = x.Second, Timestamp = x.First }).ToList();
+            dataSource.Add(item.Key, zipped);
+        }
 
         // set layout
-        var dateRange = new List<object> { chartData.Timestamps.First(), chartData.Timestamps.Last() };
-        layout.XAxis = new List<XAxis>
+        options.Debug = true;
+        options.ForecastDataPoints = new ApexCharts.ForecastDataPoints
         {
-            new()
+            Count = 3,
+            DashArray = 4,
+            FillOpacity = 0.5,
+        };
+
+        // axis
+        options.Xaxis = new ApexCharts.XAxis
+        {
+            Title = new ApexCharts.AxisTitle
             {
-                Title = new Plotly.Blazor.LayoutLib.XAxisLib.Title { Text = "Date" },
-                Type = Plotly.Blazor.LayoutLib.XAxisLib.TypeEnum.Date,
-                AutoRange = Plotly.Blazor.LayoutLib.XAxisLib.AutoRangeEnum.True,
-                Domain = new List<object> {0, 1},
-                Range = dateRange,
-                RangeSlider = new Plotly.Blazor.LayoutLib.XAxisLib.RangeSlider { Range = dateRange },
+                OffsetY = 5,
+                Text = "Timestamp",
+                Style = new ApexCharts.AxisTitleStyle { FontSize = "14px", Color = "lightgrey" }
+            },
+            AxisBorder = new ApexCharts.AxisBorder
+            {
+                Height = 2
             }
         };
-        layout.YAxis = new List<YAxis>
+        options.Yaxis = new List<ApexCharts.YAxis>
         {
-            new()
+            new ApexCharts.YAxis
             {
-                Title = new Plotly.Blazor.LayoutLib.YAxisLib.Title { Text = "Latency (ms)" },
+                DecimalsInFloat = 0,
+                Labels = new ApexCharts.YAxisLabels { Rotate = -45, Style = new ApexCharts.AxisLabelStyle { FontSize = "10px" } },
+                Title = new ApexCharts.AxisTitle { Text = "Value", Style = new ApexCharts.AxisTitleStyle { FontSize = "14px", Color = "lightgrey" } }
             }
+        };
+
+        // anotations
+        options.Annotations = new ApexCharts.Annotations 
+        {
+            Yaxis = new List<ApexCharts.AnnotationsYAxis>
+            {
+                new ApexCharts.AnnotationsYAxis
+                {
+                    Y = 50000,
+                    BorderWidth = 2,
+                    StrokeDashArray = 5,
+                    BorderColor = "red",
+                    Label = new ApexCharts.Label { Text = "Latency" }
+                }
+            }
+        };
+
+        // tooltip
+        options.Tooltip = new ApexCharts.Tooltip
+        {
+            X = new ApexCharts.TooltipX { Format = @"hh:mm:ss" },
+            Y = new ApexCharts.TooltipY
+            {
+                Title = new ApexCharts.TooltipYTitle { Formatter = @"function(name) { return name + ':' }" },
+                Formatter = @"function(value, { series, seriesIndex, dataPointIndex, w }) { return '$' + value }"
+            },
         };
     }
 
