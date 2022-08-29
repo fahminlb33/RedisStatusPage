@@ -44,6 +44,10 @@ As you can see in the image below, on the second version the data is stored neat
    </tr> 
 </table>
 
+Project video overview
+
+[![Status Page, with Redis Video](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/hcg8ssri3pzhn5ly4gys.png)](https://youtu.be/X98C4xnlrOI)
+
 ## How it works
 
 Architecture diagram:
