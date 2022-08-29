@@ -1,6 +1,7 @@
 using MudBlazor.Services;
 using Redis.OM;
 using RedisStatusPage.Core;
+using RedisStatusPage.Core.Contracts;
 using RedisStatusPage.Core.Services;
 using RedisStatusPage.Data;
 using RedisStatusPage.Services;
@@ -25,13 +26,14 @@ builder.Services.AddSingleton<INetProbe, NetProbe>();
 builder.Services.AddSingleton<IIncidentsService, IncidentsService>();
 builder.Services.AddSingleton<IStatisticsService, StatisticsService>((IServiceProvider provider) =>
 {
-    var config = provider.GetRequiredService<IConfiguration>();
-    var options = config.Get<MonitorOptions>();
-    
-    var instance = new StatisticsService(provider.GetRequiredService<ConnectionMultiplexer>(), provider.GetRequiredService<RedisConnectionProvider>());
-    instance.GraphLastSecond = options.GraphLastSeconds;
+    var options = builder.Configuration.Get<MonitorOptions>();
+    var cnMultiplexer = provider.GetRequiredService<ConnectionMultiplexer>();
+    var cnProvider = provider.GetRequiredService<RedisConnectionProvider>();
 
-    return instance;
+    return new StatisticsService(cnMultiplexer, cnProvider)
+    {
+        GraphLastSecond = options.GraphLastSeconds
+    };
 });
 
 // add hosted service to check for service health periodically
@@ -54,10 +56,12 @@ builder.Services.AddSingleton((IServiceProvider provider) =>
 var app = builder.Build();
 
 // initialize index
-var statsService = app.Services.GetRequiredService<IStatisticsService>();
-await statsService.CreateIndexIfNotExists();
-var incidentService = app.Services.GetRequiredService<IIncidentsService>();
-await incidentService.CreateIndexIfNotExists();
+await app.Services
+    .GetRequiredService<IStatisticsService>()
+    .CreateIndexIfNotExists();
+await app.Services
+    .GetRequiredService<IIncidentsService>()
+    .CreateIndexIfNotExists();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -68,11 +72,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 

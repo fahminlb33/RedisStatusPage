@@ -13,11 +13,11 @@
 
 @code {
     [Parameter]
-    public DateTime Timestamp { get; set; }
+    public DateTime Timestamp { get; set; } = DateTime.Now;
 
     [Parameter]
-    public string ServiceName{ get; set; }
+    public string ServiceName { get; set; } = string.Empty;
 
     [Parameter]
-    public IEnumerable<IncidentHistory> History { get; set; }
+    public List<IncidentHistory> History { get; set; } = new();
 }

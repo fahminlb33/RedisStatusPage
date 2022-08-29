@@ -1,19 +1,10 @@
 ﻿using Redis.OM;
-using Redis.OM.Modeling;
+using RedisStatusPage.Core.Contracts;
+using RedisStatusPage.Core.Entities;
 using StackExchange.Redis;
-using System.Text.Json;
 
 namespace RedisStatusPage.Core.Services
 {
-    public interface IStatisticsService
-    {
-        Task CreateIndexIfNotExists();
-        Task<ChartData> GetChartData();
-        Task<MonitoringStatistics> GetDashboard();
-        Task<List<ServiceStatus>> GetLatestStatus();
-        Task Snapshot(DateTime timestamp, string serviceName, bool healthy, int latency);
-    }
-
     public class StatisticsService : IStatisticsService
     {
         private readonly ConnectionMultiplexer _cn;
@@ -119,36 +110,5 @@ namespace RedisStatusPage.Core.Services
                 .Select(x => new ServiceStatus(x.Name!, x.Value == "1"))
                 .ToList();
         }
-    }
-
-    [Document(StorageType = StorageType.Json)]
-    public class MonitoringSnapshot
-    {
-        [Indexed]
-        public double UnixTimestamp { get; set; }
-        public string ServiceName { get; set; } = String.Empty;
-        public bool Healthy { get; set; }
-        public int Latency { get; set; }
-    }
-
-    public record ChartData(List<DateTime> Timestamps, Dictionary<string, List<int>> ServiceLatency);
-
-    public record ServiceStatus(string ServiceName, bool Healthy);
-
-    public record MonitoringStatistics
-    {
-        public int ServiceCount { get; set; }
-        public int ReadyCount { get; set; }
-        public int UnreachableCount { get; set; }
-        public DateTime FirstStartup { get; set; }
-        public TimeSpan Uptime => DateTime.Now - FirstStartup;
-
-        public static readonly MonitoringStatistics Empty = new MonitoringStatistics
-        {
-            ServiceCount = 0,
-            ReadyCount = 0,
-            UnreachableCount = 0,
-            FirstStartup = DateTime.Now
-        };
     }
 }

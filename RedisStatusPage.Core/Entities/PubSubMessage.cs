@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace RedisStatusPage.Core.Services
+namespace RedisStatusPage.Core.Entities
 {
     public class PubSubMessage
     {

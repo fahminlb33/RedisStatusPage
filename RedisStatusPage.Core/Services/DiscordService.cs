@@ -1,12 +1,9 @@
 ﻿using System.Text.Json;
+using RedisStatusPage.Core.Contracts;
+using RedisStatusPage.Core.Entities;
 
 namespace RedisStatusPage.Core.Services
 {
-    public interface IDiscordService
-    {
-        Task SendMessage(PubSubMessage message);
-    }
-
     public class DiscordService : IDiscordService
     {
         private readonly HttpClient _httpClient;

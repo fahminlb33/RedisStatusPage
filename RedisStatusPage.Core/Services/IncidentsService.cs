@@ -1,27 +1,10 @@
 ﻿using Redis.OM;
-using Redis.OM.Modeling;
+using RedisStatusPage.Core.Contracts;
+using RedisStatusPage.Core.Entities;
 using StackExchange.Redis;
 
 namespace RedisStatusPage.Core.Services
 {
-    public interface IIncidentsService
-    {
-        Task CreateIndexIfNotExists();
-        Task Add(Incident incident);
-        Task Update(Incident incident);
-        Task Publish(Incident incident);
-        Task<Incident> Get(string id);
-        Task<IList<Incident>> GetActive();
-        Task<IList<Incident>> GetAll();
-        Task<int> Count();
-    }
-
-    public static class IncidentStatus
-    {
-        public const string Reported = "Reported";
-        public const string Resolved = "Resolved";
-    }
-
     public class IncidentsService : IIncidentsService
     {
         private readonly ConnectionMultiplexer _cn;
@@ -92,31 +75,5 @@ namespace RedisStatusPage.Core.Services
                 .Where(x => x.LastStatus == IncidentStatus.Reported)
                 .ToListAsync();
         }
-    }
-
-    [Document(StorageType = StorageType.Json)]
-    public class Incident
-    {
-        [RedisIdField]
-        public Ulid Id { get; set; } = Ulid.NewUlid();
-        [Indexed(Sortable = true)]
-        public double UnixTimestamp { get; set; }
-        [Indexed]
-        public string LastStatus { get; set; }
-        [Indexed]
-        public string ServiceName { get; set; }
-        [Indexed]
-        public List<IncidentResponse> History { get; set; } = new List<IncidentResponse>();
-    }
-
-    [Document(StorageType = StorageType.Json)]
-    public class IncidentResponse
-    {
-        [Indexed]
-        public double UnixTimestamp { get; set; }
-        [Indexed]
-        public string Status { get; set; } = string.Empty;
-        [Indexed]
-        public string Message { get; set; } = string.Empty;
     }
 }

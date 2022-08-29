@@ -1,4 +1,5 @@
-﻿using RedisStatusPage.Core.Services;
+﻿using RedisStatusPage.Core.Entities;
+using RedisStatusPage.Core.Services;
 using StackExchange.Redis;
 
 Console.WriteLine("Initializing Discord notification server...");

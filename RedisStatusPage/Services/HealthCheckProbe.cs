@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using RedisStatusPage.Core;
-using RedisStatusPage.Core.Services;
+using RedisStatusPage.Core.Contracts;
+using RedisStatusPage.Core.Entities;
 using System.Diagnostics;
 
 namespace RedisStatusPage.Services
